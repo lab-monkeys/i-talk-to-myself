@@ -1,1 +1,15 @@
-{}
+quarkus:
+  application:
+    name: reactiveApp
+  http:
+    port: ${SERVER_PORT}
+  log:
+    level: "INFO"
+    console:
+      enable: true
+instance-of-me:
+  servers:
+  - ${MINI_ME}
+  - ${MICRO_ME}
+  schedule: "10s"
+
