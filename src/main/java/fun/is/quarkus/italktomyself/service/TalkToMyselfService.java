@@ -32,12 +32,12 @@ public class TalkToMyselfService implements TalkToMyselfApi {
     }
 
     @Override
-    public void sleep() {
-        eventBus.request("sleep", true);
+    public Uni<Response> sleep() {
+        return eventBus.request("sleep", true).onItem().transform(item -> Response.ok().build());
     }
 
     @Override
-    public void wake() {
-        eventBus.request("sleep", false);
+    public Uni<Response> wake() {
+        return eventBus.request("sleep", false).onItem().transform(item -> Response.ok().build());
     }
 }

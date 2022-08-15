@@ -27,9 +27,9 @@ public interface TalkToMyselfApi {
 
     @Path("/sleep")
     @POST
-    public void sleep();
+    public Uni<Response> sleep();
 
     @Path("wake")
     @POST
-    public void wake();
+    public Uni<Response> wake();
 }

@@ -9,7 +9,8 @@ quarkus:
       enable: true
 instance-of-me:
   servers:
-  - ${MINI_ME}
-  - ${MICRO_ME}
+  - http://localhost:4070
+  - http://localhost:4080
+  - http://localhost:4090
   schedule: "10s"
 
