@@ -88,9 +88,8 @@ public class TalkToMyselfApp {
     }
 
     @ConsumeEvent("sleep")
-    public boolean sleep(boolean sleep) {
+    public void sleep(boolean sleep) {
         this.pause = sleep;
-        return sleep;
     }
 
     @Scheduled(every = "{instance-of-me.schedule}")
