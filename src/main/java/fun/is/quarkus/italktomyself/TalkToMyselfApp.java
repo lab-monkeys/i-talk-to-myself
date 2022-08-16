@@ -60,7 +60,7 @@ public class TalkToMyselfApp {
         if (this.pause) {
             LOG.info("Simulating Slow Response with 2500ms pause.");
             try {
-                Thread.sleep(2500);
+                Thread.sleep(1500);
             } catch (Exception e) {
                 LOG.error(e.getMessage() + e.getCause().getMessage());
             }
@@ -101,7 +101,7 @@ public class TalkToMyselfApp {
             pendingHeartbeats.put(hb.getMessageId(), hb);
             TalkToMyselfApi api = RestClientBuilder.newBuilder().baseUri(URI.create(url)).build(TalkToMyselfApi.class);
             LOG.info("Sending Heartbeat: " + hb + " To: " + url);
-            api.heartbeat(mapper.heartBeatToDto(hb)).ifNoItem().after(Duration.ofMillis(2000)).failWith(new Exception("Request Timeout")).subscribe().with(reply -> processHbReply(reply), fail -> handleFailure(hb, url, fail));
+            api.heartbeat(mapper.heartBeatToDto(hb)).ifNoItem().after(Duration.ofMillis(1000)).failWith(new Exception("Request Timeout")).subscribe().with(reply -> processHbReply(reply), fail -> handleFailure(hb, url, fail));
         }
     }
 
