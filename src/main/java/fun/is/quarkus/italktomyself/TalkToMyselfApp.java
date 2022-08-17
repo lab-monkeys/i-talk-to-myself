@@ -25,6 +25,7 @@ import fun.is.quarkus.italktomyself.dto.ReplyDto;
 import fun.is.quarkus.italktomyself.dto.StatusDto;
 import fun.is.quarkus.italktomyself.mapper.DtoMapper;
 import fun.is.quarkus.italktomyself.model.HeartBeat;
+import fun.is.quarkus.italktomyself.model.InstanceOfMe;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.vertx.ConsumeEvent;
@@ -34,7 +35,7 @@ public class TalkToMyselfApp {
 
     final Logger LOG = Logger.getLogger(TalkToMyselfApp.class);
 
-    Map<UUID, Boolean> instances;
+    Map<UUID, InstanceOfMe> instances;
 
     Map<UUID, HeartBeat> pendingHeartbeats;
 
@@ -50,7 +51,7 @@ public class TalkToMyselfApp {
 
     void startUp(@Observes StartupEvent startupEvent) {
         myInstanceId = UUID.randomUUID();
-        instances = Collections.synchronizedMap(new HashMap<UUID, Boolean>());
+        instances = Collections.synchronizedMap(new HashMap<UUID, InstanceOfMe>());
         pendingHeartbeats = Collections.synchronizedMap(new HashMap<UUID, HeartBeat>());
     }
 
@@ -65,8 +66,8 @@ public class TalkToMyselfApp {
                 LOG.error(e.getMessage() + e.getCause().getMessage());
             }
         }
-        instances.put(heartbeat.sender(), true);
-        ReplyDto reply = new ReplyDto(myInstanceId, UUID.randomUUID(), heartbeat.messageId(), "Hello To You!");
+        instances.put(heartbeat.sender(), new InstanceOfMe(heartbeat.url(), true));
+        ReplyDto reply = new ReplyDto(myInstanceId, UUID.randomUUID(), heartbeat.messageId());
         LOG.info("Sending Reply: " + reply + " To: " + heartbeat.sender());
         return reply;
     }
@@ -76,8 +77,7 @@ public class TalkToMyselfApp {
 
         List<InstanceOfMeDto> instanceDtos = new ArrayList<InstanceOfMeDto>();
         for (UUID key : instances.keySet()) {
-            InstanceOfMeDto dto = new InstanceOfMeDto(key, instances.get(key));
-            instanceDtos.add(dto);
+            instanceDtos.add(mapper.instanceOfMeToDto(key, instances.get(key)));
         }
         List<HeartBeatDto> hBeatDtos = new ArrayList<HeartBeatDto>();
         for (HeartBeat hb : pendingHeartbeats.values()) {
@@ -96,7 +96,7 @@ public class TalkToMyselfApp {
     public void heartbeat() {
         LOG.info("Scheduler Fired");
         for (String url : serviceUrls) {
-            HeartBeat hb = new HeartBeat(myInstanceId, UUID.randomUUID(), "Hello From Me!");
+            HeartBeat hb = new HeartBeat(myInstanceId, UUID.randomUUID(), url);
             pendingHeartbeats.put(hb.getMessageId(), hb);
             TalkToMyselfApi api = RestClientBuilder.newBuilder().baseUri(URI.create(url)).build(TalkToMyselfApi.class);
             LOG.info("Sending Heartbeat: " + hb + " To: " + url);
@@ -106,7 +106,7 @@ public class TalkToMyselfApp {
 
     private void processHbReply(Response response) {
         ReplyDto reply = response.readEntity(ReplyDto.class);
-        LOG.info("Received HB Reply: " + response.getStatus() + " From: " + reply.sender() + " Message: " + reply.reply());
+        LOG.info("Received HB Reply: " + response.getStatus() + " From: " + reply.sender());
         pendingHeartbeats.remove(reply.messageId());
     }
 
