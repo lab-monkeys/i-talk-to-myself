@@ -35,7 +35,7 @@ public class TalkToMyselfApp {
 
     final Logger LOG = Logger.getLogger(TalkToMyselfApp.class);
 
-    Map<UUID, InstanceOfMe> instances;
+    Map<String, InstanceOfMe> instances;
 
     Map<UUID, HeartBeat> pendingHeartbeats;
 
@@ -51,7 +51,7 @@ public class TalkToMyselfApp {
 
     void startUp(@Observes StartupEvent startupEvent) {
         myInstanceId = UUID.randomUUID();
-        instances = Collections.synchronizedMap(new HashMap<UUID, InstanceOfMe>());
+        instances = Collections.synchronizedMap(new HashMap<String, InstanceOfMe>());
         pendingHeartbeats = Collections.synchronizedMap(new HashMap<UUID, HeartBeat>());
     }
 
@@ -66,8 +66,7 @@ public class TalkToMyselfApp {
                 LOG.error(e.getMessage() + e.getCause().getMessage());
             }
         }
-        instances.put(heartbeat.sender(), new InstanceOfMe(heartbeat.url(), true));
-        ReplyDto reply = new ReplyDto(myInstanceId, UUID.randomUUID(), heartbeat.messageId());
+        ReplyDto reply = new ReplyDto(myInstanceId, UUID.randomUUID(), heartbeat.messageId(), heartbeat.url());
         LOG.info("Sending Reply: " + reply + " To: " + heartbeat.sender());
         return reply;
     }
@@ -76,7 +75,8 @@ public class TalkToMyselfApp {
     public StatusDto status(Object noValue) {
 
         List<InstanceOfMeDto> instanceDtos = new ArrayList<InstanceOfMeDto>();
-        for (UUID key : instances.keySet()) {
+        for (String key : instances.keySet()) {
+            LOG.info("Status Instances: " + key + instances.get(key));
             instanceDtos.add(mapper.instanceOfMeToDto(key, instances.get(key)));
         }
         List<HeartBeatDto> hBeatDtos = new ArrayList<HeartBeatDto>();
@@ -100,7 +100,7 @@ public class TalkToMyselfApp {
             pendingHeartbeats.put(hb.getMessageId(), hb);
             TalkToMyselfApi api = RestClientBuilder.newBuilder().baseUri(URI.create(url)).build(TalkToMyselfApi.class);
             LOG.info("Sending Heartbeat: " + hb + " To: " + url);
-            api.heartbeat(mapper.heartBeatToDto(hb)).ifNoItem().after(Duration.ofMillis(1000)).failWith(new Exception("Request Timeout")).subscribe().with(reply -> processHbReply(reply), fail -> handleFailure(hb, url, fail));
+            api.heartbeat(mapper.heartBeatToDto(hb)).ifNoItem().after(Duration.ofMillis(1000)).failWith(new Exception("Request Timeout")).subscribe().with(reply -> processHbReply(reply), fail -> handleFailure(hb, fail));
         }
     }
 
@@ -108,9 +108,15 @@ public class TalkToMyselfApp {
         ReplyDto reply = response.readEntity(ReplyDto.class);
         LOG.info("Received HB Reply: " + response.getStatus() + " From: " + reply.sender());
         pendingHeartbeats.remove(reply.messageId());
+        instances.put(reply.url(), new InstanceOfMe(reply.sender(), true));
     }
 
-    private void handleFailure(HeartBeat hb, String url, Throwable error) {
-        LOG.error("Failed sending heartbeat: " + hb + " To: " + url + " With Error: " + error.getMessage());
+    private void handleFailure(HeartBeat hb, Throwable error) {
+        LOG.error("Failed sending heartbeat: " + hb + " To: " + hb.getUrl() + " With Error: " + error.getMessage());
+        if(instances.containsKey(hb.getUrl())) {
+            InstanceOfMe instance = instances.get(hb.getUrl());
+            instance.setActive(false);
+            instances.put(hb.getUrl(), instance);
+        }
     }
 }

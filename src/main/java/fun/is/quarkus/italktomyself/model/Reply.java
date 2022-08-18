@@ -12,4 +12,5 @@ public class Reply {
     private UUID sender;
     private UUID replyId;
     private UUID messageId;
+    String url;
 }

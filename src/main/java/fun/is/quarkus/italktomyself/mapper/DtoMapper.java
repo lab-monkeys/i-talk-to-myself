@@ -16,6 +16,6 @@ public interface DtoMapper {
     HeartBeat dtoToHeartBeat(HeartBeatDto dto);
     HeartBeatDto heartBeatToDto(HeartBeat heartbeat);
     InstanceOfMe dtoToInstanceOfMe(InstanceOfMeDto dto);
-    @Mapping(target = "instanceId", source = "instanceId")
-    InstanceOfMeDto instanceOfMeToDto(UUID instanceId, InstanceOfMe instance);
+    @Mapping(target = "url", source = "url")
+    InstanceOfMeDto instanceOfMeToDto(String url, InstanceOfMe instance);
 }
