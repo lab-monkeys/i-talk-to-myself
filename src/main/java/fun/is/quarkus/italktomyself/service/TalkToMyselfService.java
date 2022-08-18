@@ -21,26 +21,27 @@ public class TalkToMyselfService implements TalkToMyselfApi {
 
     @Override
     public Uni<Response> heartbeat(HeartBeatDto heartbeat) {
-
         return eventBus.<HeartBeatDto>request("receive-heartbeat", heartbeat).onItem().transform(item -> Response.ok(item.body()).build());
     }
 
     @Override
     public Uni<Response> getStatus() {
-        
         return eventBus.request("status", null).onItem().transform(item -> Response.ok(item.body()).build());
     }
 
     @Override
+    public Uni<Response> getPendingHeartbeats() {
+        return eventBus.request("no-response", null).onItem().transform(item -> Response.ok(item.body()).build());
+    }
+
+    @Override
     public Response sleep() {
-        //return eventBus.request("sleep", true).onItem().transform(item -> Response.ok().build());
         eventBus.send("sleep", true);
         return Response.ok().build();
     }
 
     @Override
     public Response wake() {
-        //return eventBus.request("sleep", false).onItem().transform(item -> Response.ok().build());
         eventBus.send("sleep", false);
         return Response.ok().build();
     }

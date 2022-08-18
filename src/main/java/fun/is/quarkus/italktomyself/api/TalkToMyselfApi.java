@@ -25,11 +25,16 @@ public interface TalkToMyselfApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> getStatus();
 
+    @Path("/no-reply")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> getPendingHeartbeats();
+    
     @Path("/sleep")
     @POST
     public Response sleep();
 
-    @Path("wake")
+    @Path("/wake")
     @POST
     public Response wake();
 }

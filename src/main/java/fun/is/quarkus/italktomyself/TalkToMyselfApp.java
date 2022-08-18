@@ -79,12 +79,18 @@ public class TalkToMyselfApp {
             LOG.info("Status Instances: " + key + instances.get(key));
             instanceDtos.add(mapper.instanceOfMeToDto(key, instances.get(key)));
         }
+        
+        StatusDto status = new StatusDto(myInstanceId, instanceDtos);
+        return status;
+    }
+
+    @ConsumeEvent("no-response")
+    public List<HeartBeatDto> getPendingHeartbeats() {
         List<HeartBeatDto> hBeatDtos = new ArrayList<HeartBeatDto>();
         for (HeartBeat hb : pendingHeartbeats.values()) {
             hBeatDtos.add(mapper.heartBeatToDto(hb));
         }
-        StatusDto status = new StatusDto(myInstanceId, instanceDtos, hBeatDtos);
-        return status;
+        return hBeatDtos;
     }
 
     @ConsumeEvent("sleep")
