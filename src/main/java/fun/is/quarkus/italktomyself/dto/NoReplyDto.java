@@ -1,0 +1,6 @@
+package fun.is.quarkus.italktomyself.dto;
+
+import java.util.List;
+import java.util.UUID;
+
+public record NoReplyDto(UUID instanceId, List<HeartBeatDto>noReply) {}

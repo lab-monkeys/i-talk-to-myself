@@ -1,6 +1,6 @@
 quarkus:
   application:
-    name: reactiveApp
+    name: iTalkToMyself
   http:
     port: ${SERVER_PORT}
   log:
@@ -13,4 +13,3 @@ instance-of-me:
   - http://localhost:4080
   - http://localhost:4090
   schedule: "10s"
-

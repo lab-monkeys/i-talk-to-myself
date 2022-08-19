@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import fun.is.quarkus.italktomyself.api.TalkToMyselfApi;
 import fun.is.quarkus.italktomyself.dto.HeartBeatDto;
 import fun.is.quarkus.italktomyself.dto.InstanceOfMeDto;
+import fun.is.quarkus.italktomyself.dto.NoReplyDto;
 import fun.is.quarkus.italktomyself.dto.ReplyDto;
 import fun.is.quarkus.italktomyself.dto.StatusDto;
 import fun.is.quarkus.italktomyself.mapper.DtoMapper;
@@ -85,12 +86,14 @@ public class TalkToMyselfApp {
     }
 
     @ConsumeEvent("no-response")
-    public List<HeartBeatDto> getPendingHeartbeats() {
+    public NoReplyDto getPendingHeartbeats(Object noValue) {
+        
         List<HeartBeatDto> hBeatDtos = new ArrayList<HeartBeatDto>();
         for (HeartBeat hb : pendingHeartbeats.values()) {
             hBeatDtos.add(mapper.heartBeatToDto(hb));
         }
-        return hBeatDtos;
+        NoReplyDto dto = new NoReplyDto(myInstanceId, hBeatDtos);
+        return dto;
     }
 
     @ConsumeEvent("sleep")
